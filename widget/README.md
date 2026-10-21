@@ -158,12 +158,25 @@ in this tab's session storage. Unsaved form values stay in memory only.
 | `include-citations`| boolean | `false`       | Include citation markers in responses    |
 | `start-expanded`   | boolean | `false`       | Inline mode: show the full chat panel before the first message, instead of the compact input bar |
 | `require-user-details` | boolean | `false`       | Launcher mode only: collect name, email, and message before starting a new chat |
+| `hide-powered-by`  | boolean | `false`       | Hide the "Powered by Onyx" footer in launcher and inline chat panels |
 
 **Note**: These attributes must be provided as HTML attributes. Only `backend-url` and `api-key` can optionally be set via environment variables for self-hosted builds.
 
 **Note on `include-citations`**: the attribute is a boolean flag, so its presence alone means `true`. `include-citations="false"` still turns citations **on**. Omit the attribute to turn them off.
 
 The same boolean rule applies to `require-user-details`. Omit it to keep the standard launcher chat.
+
+Add `hide-powered-by` to hide the footer. Omit it to keep the footer visible.
+Its presence enables it, so `hide-powered-by="false"` also hides the footer.
+The JavaScript property is `hidePoweredBy`.
+
+```html
+<onyx-chat-widget
+  backend-url="https://cloud.onyx.app/api"
+  api-key="your_api_key_here"
+  hide-powered-by="true"
+></onyx-chat-widget>
+```
 
 Citations are off by default. While they are off, Onyx strips the citation markers from the answer text and sends no citation data, so the widget renders no source links. Add the bare attribute to get inline `[n]` markers and clickable source badges:
 

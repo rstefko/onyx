@@ -44,6 +44,8 @@ export class OnyxChatWidget extends LitElement {
   startExpanded?: boolean;
   @property({ attribute: "require-user-details", type: Boolean })
   requireUserDetails?: boolean;
+  @property({ attribute: "hide-powered-by", type: Boolean })
+  hidePoweredBy?: boolean;
 
   // Assigned as a JS property, since a function cannot ride an HTML attribute.
   // Takes precedence over `api-key` and keeps the credential out of the markup.
@@ -134,6 +136,7 @@ export class OnyxChatWidget extends LitElement {
       includeCitations: this.includeCitations,
       startExpanded: this.startExpanded,
       requireUserDetails: this.requireUserDetails,
+      hidePoweredBy: this.hidePoweredBy,
     });
 
     // Apply custom colors
@@ -787,7 +790,9 @@ export class OnyxChatWidget extends LitElement {
   private renderInput() {
     return html`
       <div class="input-wrapper">
-        <div class="input-container">
+        <div
+          class="input-container ${this.config.hidePoweredBy ? "no-footer" : ""}"
+        >
           <input
             class="input"
             type="text"
@@ -821,16 +826,20 @@ export class OnyxChatWidget extends LitElement {
             </svg>
           </button>
         </div>
-        <div class="powered-by">
-          Powered by
-          <a
-            href="https://onyx.app"
-            target="_blank"
-            rel="noopener noreferrer"
-            style="text-decoration: underline;"
-            >Onyx</a
-          >
-        </div>
+        ${this.config.hidePoweredBy
+          ? ""
+          : html`
+              <div class="powered-by">
+                Powered by
+                <a
+                  href="https://onyx.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style="text-decoration: underline;"
+                  >Onyx</a
+                >
+              </div>
+            `}
       </div>
     `;
   }

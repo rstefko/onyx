@@ -49,6 +49,10 @@ Restored conversations skip this form. Inline mode keeps its compact input or ex
 Reset clears the form and transcript. Name and email do not change authentication.
 These values become conversation content, including the stored transcript.
 
+The optional `hide-powered-by` flag hides the "Powered by Onyx" footer in both chat panel modes.
+It defaults to false. Compact input and user details forms have no footer.
+When the footer is hidden, the input keeps equal top and bottom padding.
+
 **Chrome extension.** A user installs it from the Chrome Web Store, sees a
 welcome page on first install (`extensions/chrome/src/pages/welcome.html`),
 and gets: a side panel that renders the full Onyx web app in an iframe, a

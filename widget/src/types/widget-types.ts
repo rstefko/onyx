@@ -33,6 +33,7 @@ export interface WidgetConfig {
   startExpanded?: boolean;
   // Launcher mode: collect contact details before the first message.
   requireUserDetails?: boolean;
+  hidePoweredBy?: boolean;
 
   // Optional - Citations
   includeCitations?: boolean;

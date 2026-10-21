@@ -25,6 +25,7 @@ export function resolveConfig(attributes: Partial<WidgetConfig>): WidgetConfig {
     includeCitations: attributes.includeCitations ?? false,
     startExpanded: attributes.startExpanded ?? false,
     requireUserDetails: attributes.requireUserDetails ?? false,
+    hidePoweredBy: attributes.hidePoweredBy ?? false,
   };
 
   if (!config.backendUrl) {

@@ -368,6 +368,10 @@ export const widgetStyles = css`
     gap: var(--onyx-space-xs);
   }
 
+  .input-container.no-footer {
+    padding-bottom: var(--onyx-space-md);
+  }
+
   .input {
     flex: 1;
     min-width: 0;
