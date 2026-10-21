@@ -392,6 +392,48 @@ export const widgetStyles = css`
     outline-offset: -2px;
   }
 
+  .user-details-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--onyx-space-sm);
+    padding: var(--onyx-space-md);
+    overflow-y: auto;
+    background: var(--background-neutral-00);
+    color: var(--text-04);
+    font-size: var(--onyx-font-size-main);
+  }
+
+  .user-details-form .input {
+    box-sizing: border-box;
+    flex: none;
+    width: 100%;
+  }
+
+  .user-details-form textarea.input {
+    height: auto;
+    min-height: 96px;
+    resize: vertical;
+  }
+
+  .user-details-form .disclaimer {
+    padding: 0;
+    border: none;
+  }
+
+  .start-chat-button {
+    padding: var(--onyx-space-sm) var(--onyx-space-md);
+    border: none;
+    border-radius: var(--onyx-radius-08);
+    background: var(--theme-primary-05);
+    color: var(--text-light-05);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .start-chat-button:hover {
+    background: var(--theme-primary-06);
+  }
+
   .powered-by {
     font-size: 10px;
     color: var(--text-04);

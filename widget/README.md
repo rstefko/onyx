@@ -55,6 +55,28 @@ names, conversation content, and error details returned by the backend are uncha
 
 ## How It Works
 
+### Starting a chat
+
+Add the `require-user-details` attribute to enable required Name, Email, and Message fields in launcher mode.
+This option is off by default and has no effect in inline mode.
+The email field checks the email format. Fields cannot contain only spaces.
+Select **Start chat** to send all three values as one initial user message.
+Name, email, and message each appear on a separate line.
+Later messages use the normal chat input. Restored conversations skip this form.
+Resetting the conversation clears the fields and shows the form again.
+
+```html
+<onyx-chat-widget
+  backend-url="https://cloud.onyx.app/api"
+  api-key="your_api_key_here"
+  require-user-details="true"
+></onyx-chat-widget>
+```
+
+The name and email are message content, not authentication credentials.
+Onyx stores them with the conversation. The widget also stores the transcript
+in this tab's session storage. Unsaved form values stay in memory only.
+
 ### Architecture Overview
 
 ```
@@ -135,10 +157,13 @@ names, conversation content, and error details returned by the backend are uncha
 | `mode`             | string  | `"launcher"`  | Display mode: `"launcher"` or `"inline"` |
 | `include-citations`| boolean | `false`       | Include citation markers in responses    |
 | `start-expanded`   | boolean | `false`       | Inline mode: show the full chat panel before the first message, instead of the compact input bar |
+| `require-user-details` | boolean | `false`       | Launcher mode only: collect name, email, and message before starting a new chat |
 
 **Note**: These attributes must be provided as HTML attributes. Only `backend-url` and `api-key` can optionally be set via environment variables for self-hosted builds.
 
 **Note on `include-citations`**: the attribute is a boolean flag, so its presence alone means `true`. `include-citations="false"` still turns citations **on**. Omit the attribute to turn them off.
+
+The same boolean rule applies to `require-user-details`. Omit it to keep the standard launcher chat.
 
 Citations are off by default. While they are off, Onyx strips the citation markers from the answer text and sends no citation data, so the widget renders no source links. Add the bare attribute to get inline `[n]` markers and clickable source badges:
 

@@ -41,6 +41,14 @@ the visitor's own identity-provider token, so each visitor acts as their own
 Onyx user. Passthrough works on single-tenant deployments only
 (`docs/WIDGET_JWT_PASSTHROUGH.md`).
 
+The optional `require-user-details` flag requires a name, valid email, and message before a new launcher chat.
+It defaults to false and has no effect in inline mode.
+It sends these values together as the initial user message.
+Message text aligns to the start, independent of the host page's text alignment.
+Restored conversations skip this form. Inline mode keeps its compact input or expanded chat panel.
+Reset clears the form and transcript. Name and email do not change authentication.
+These values become conversation content, including the stored transcript.
+
 **Chrome extension.** A user installs it from the Chrome Web Store, sees a
 welcome page on first install (`extensions/chrome/src/pages/welcome.html`),
 and gets: a side panel that renders the full Onyx web app in an iframe, a
@@ -154,7 +162,8 @@ customer HTML: <onyx-chat-widget backend-url=... api-key=...>
        ├─ resolveConfig(...)                     widget/src/config/config.ts (attrs win over VITE_* env)
        ├─ new ApiService(...)                     widget/src/services/api-service.ts (token resolved per request)
        └─ loadSession() from sessionStorage       widget/src/utils/storage.ts
-user sends a message
+user sends a message (or submits the form when launcher require-user-details is enabled)
+  ├─ OnyxChatWidget.handleStartChat() combines form values into one user message, when enabled
   ├─ ApiService.createChatSession()  → POST /chat/create-chat-session   (first message only)
   └─ ApiService.streamMessage()      → POST /chat/send-chat-message, origin="widget"
        └─ parseSSEStream(response)                api-service.ts, newline-delimited JSON
@@ -366,9 +375,15 @@ repository. Verification below is manual.
 2. Confirm the launcher button appears, and that clicking it opens a working
    chat backed by a real `backend-url`/`api-key` you configure (see
    `widget/.env.example`).
-3. Send a message; confirm the SSE stream renders progressively and the
-   session persists across a page reload (`sessionStorage`, §3).
-4. Open browser devtools and confirm the `api-key` attribute is visible in
+3. Enable `require-user-details` in launcher mode.
+   Check that empty fields, space-only fields, and invalid email addresses block submission.
+   Submit a name, email, and message. Confirm they appear together in the first user message.
+   Without `require-user-details`, confirm launcher mode shows the normal chat input.
+   Confirm inline mode ignores `require-user-details`, with and without `start-expanded`.
+4. Confirm later messages use the normal input and do not repeat the name or email.
+   Confirm the SSE stream renders progressively and the session persists across a page reload
+   (`sessionStorage`, §3). Restored chats must skip the form. Reset must show an empty form.
+5. Open browser devtools and confirm the `api-key` attribute is visible in
    the DOM inspector, demonstrating the credential-exposure contract in §5.4
    is real, not theoretical.
 

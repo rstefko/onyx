@@ -31,6 +31,8 @@ export interface WidgetConfig {
   mode?: "launcher" | "inline";
   // Inline mode: show the full chat panel before the first message.
   startExpanded?: boolean;
+  // Launcher mode: collect contact details before the first message.
+  requireUserDetails?: boolean;
 
   // Optional - Citations
   includeCitations?: boolean;
@@ -47,6 +49,7 @@ export interface ChatMessage {
   id: string | number; // string for temporary local IDs, number for backend IDs
   role: "user" | "assistant";
   content: string;
+  initialMessageParts?: string[];
   timestamp: number;
   isStreaming?: boolean;
   citations?: ResolvedCitation[];

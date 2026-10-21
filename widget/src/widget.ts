@@ -42,6 +42,8 @@ export class OnyxChatWidget extends LitElement {
   includeCitations?: boolean;
   @property({ attribute: "start-expanded", type: Boolean })
   startExpanded?: boolean;
+  @property({ attribute: "require-user-details", type: Boolean })
+  requireUserDetails?: boolean;
 
   // Assigned as a JS property, since a function cannot ride an HTML attribute.
   // Takes precedence over `api-key` and keeps the credential out of the markup.
@@ -56,6 +58,8 @@ export class OnyxChatWidget extends LitElement {
   @state() private streamingStatus = ""; // e.g., "Searching the web...", "Generating response..."
   @state() private error?: string;
   @state() private inputValue = "";
+  @state() private visitorName = "";
+  @state() private visitorEmail = "";
   @state() private locale: Locale = resolveLocale();
 
   private get strings() {
@@ -129,6 +133,7 @@ export class OnyxChatWidget extends LitElement {
       mode: this.mode,
       includeCitations: this.includeCitations,
       startExpanded: this.startExpanded,
+      requireUserDetails: this.requireUserDetails,
     });
 
     // Apply custom colors
@@ -248,6 +253,8 @@ export class OnyxChatWidget extends LitElement {
     this.chatSessionId = undefined;
     this.error = undefined;
     this.inputValue = "";
+    this.visitorName = "";
+    this.visitorEmail = "";
     this.isStreaming = false;
     this.isLoading = false;
     this.streamingStatus = "";
@@ -378,6 +385,48 @@ export class OnyxChatWidget extends LitElement {
     this.inputValue = (e.target as HTMLInputElement).value;
   }
 
+  private handleUserDetailsInput(e: Event) {
+    const field = e.target;
+    if (
+      !(field instanceof HTMLInputElement) &&
+      !(field instanceof HTMLTextAreaElement)
+    ) {
+      return;
+    }
+
+    field.setCustomValidity(field.value.trim() ? "" : this.strings.requiredField);
+    if (field.name === "name") {
+      this.visitorName = field.value;
+    } else if (field.name === "email") {
+      this.visitorEmail = field.value;
+    } else if (field.name === "message") {
+      this.inputValue = field.value;
+    }
+  }
+
+  private handleUserDetailsKeyDown(e: KeyboardEvent) {
+    if (e.key !== "Escape") {
+      e.stopPropagation();
+    }
+  }
+
+  private handleStartChat(e: SubmitEvent) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    if (!(form instanceof HTMLFormElement) || !form.reportValidity()) return;
+    if (this.messages.length || this.isLoading || this.isStreaming) return;
+
+    const initialMessageParts = [
+      `${this.strings.nameLabel}: ${this.visitorName.trim()}`,
+      `${this.strings.emailLabel}: ${this.visitorEmail.trim()}`,
+      `${this.strings.messageLabel}: ${this.inputValue.trim()}`,
+    ];
+    this.inputValue = initialMessageParts.join("\n");
+    this.visitorName = "";
+    this.visitorEmail = "";
+    void this.sendChatMessage(initialMessageParts);
+  }
+
   private handleKeyDown(e: KeyboardEvent) {
     // Shadow DOM retargets `e.target` to the host element, so page-level
     // handlers that let keys through only for text fields (e.g. ones that
@@ -392,7 +441,11 @@ export class OnyxChatWidget extends LitElement {
     }
   }
 
-  private async sendMessage() {
+  private sendMessage() {
+    return this.sendChatMessage();
+  }
+
+  private async sendChatMessage(initialMessageParts?: string[]) {
     const message = this.inputValue.trim();
     if (!message || this.isLoading || this.isStreaming) return;
 
@@ -404,6 +457,7 @@ export class OnyxChatWidget extends LitElement {
       id: `msg-${Date.now()}`,
       role: "user",
       content: message,
+      initialMessageParts,
       timestamp: Date.now(),
     };
     this.messages = [...this.messages, userMessage];
@@ -566,6 +620,10 @@ export class OnyxChatWidget extends LitElement {
   render() {
     const showContainer = this.config.mode === "inline" || this.isOpen;
     const hasMessages = this.messages.length > 0 || this.isStreaming;
+    const showUserDetails =
+      this.config.mode === "launcher" &&
+      this.config.requireUserDetails &&
+      !hasMessages;
     const isCompactInline =
       this.config.mode === "inline" &&
       !this.config.startExpanded &&
@@ -598,8 +656,10 @@ export class OnyxChatWidget extends LitElement {
               ${isCompactInline
                 ? this.renderCompactInput()
                 : html`
-                    ${this.renderHeader()} ${this.renderMessages()}
-                    ${this.renderInput()}
+                    ${this.renderHeader()}
+                    ${showUserDetails
+                      ? this.renderUserDetailsForm()
+                      : html`${this.renderMessages()} ${this.renderInput()}`}
                   `}
             </div>
           `
@@ -691,7 +751,9 @@ export class OnyxChatWidget extends LitElement {
                       msg.content,
                       msg.citations
                     )}${this.renderCitations(msg.citations)}`
-                  : msg.content}
+                  : msg.initialMessageParts
+                    ? msg.initialMessageParts.map((part) => html`<p>${part}</p>`)
+                    : msg.content}
               </div>
             </div>
           `
@@ -818,6 +880,54 @@ export class OnyxChatWidget extends LitElement {
           </svg>
         </button>
       </div>
+    `;
+  }
+
+  private renderUserDetailsForm() {
+    return html`
+      <form
+        class="user-details-form"
+        @submit=${this.handleStartChat}
+        @keydown=${this.handleUserDetailsKeyDown}
+      >
+        <label for="visitor-name">${this.strings.nameLabel}</label>
+        <input
+          id="visitor-name"
+          class="input"
+          name="name"
+          type="text"
+          autocomplete="name"
+          required
+          .value=${this.visitorName}
+          @input=${this.handleUserDetailsInput}
+        />
+        <label for="visitor-email">${this.strings.emailLabel}</label>
+        <input
+          id="visitor-email"
+          class="input"
+          name="email"
+          type="email"
+          autocomplete="email"
+          required
+          .value=${this.visitorEmail}
+          @input=${this.handleUserDetailsInput}
+        />
+        <label for="visitor-message">${this.strings.messageLabel}</label>
+        <textarea
+          id="visitor-message"
+          class="input"
+          name="message"
+          rows="4"
+          required
+          .value=${this.inputValue}
+          @input=${this.handleUserDetailsInput}
+          placeholder=${this.strings.messagePlaceholder}
+        ></textarea>
+        <div class="disclaimer">${this.strings.disclaimer}</div>
+        <button class="start-chat-button" type="submit">
+          ${this.strings.startChat}
+        </button>
+      </form>
     `;
   }
 }

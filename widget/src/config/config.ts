@@ -24,6 +24,7 @@ export function resolveConfig(attributes: Partial<WidgetConfig>): WidgetConfig {
     mode: attributes.mode || "launcher",
     includeCitations: attributes.includeCitations ?? false,
     startExpanded: attributes.startExpanded ?? false,
+    requireUserDetails: attributes.requireUserDetails ?? false,
   };
 
   if (!config.backendUrl) {
